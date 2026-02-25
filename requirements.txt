@@ -1,0 +1,4 @@
+web3==7.14.1
+eth-account>=0.13.0
+python-dotenv>=1.0.0
+anthropic>=0.49.0

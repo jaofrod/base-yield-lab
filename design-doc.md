@@ -79,3 +79,24 @@ A chave privada deve ser MUUUITO PRIVADA.
  - Nunca printar ela em lado nenhum.
  - Nunca salvar num JSON
  - Nunca encostar no github, mesmo num repo privado, se chegar a tocar no github a chave já está comprometida
+
+
+## 5. EVOLUCAO: Framework Open-Source (DeFAI Agent Framework)
+
+O projeto esta sendo reposicionado de bot pessoal para um **framework open-source** que permite qualquer desenvolvedor criar agentes DeFi autonomos com IA.
+
+### O que muda
+- **Plugin system:** estrategias viram plugins (BaseStrategy ABC), permitindo criar novas estrategias sem mexer no core
+- **Config YAML:** parametros, protocolos, chains e thresholds configurados via arquivo YAML em vez de constantes hardcoded
+- **Integracoes modulares:** cada protocolo (Aave, Compound, etc.) vira um modulo independente com interface padrao (IntegrationBase)
+- **Multi-chain:** suporte a multiplas redes EVM (Base, Optimism, Arbitrum) via configuracao
+
+### O que NAO muda
+- Arquitetura core: Listener → Engine → Firewall → Executor
+- Seguranca: Firewall deterministico, chave privada isolada
+- A estrategia atual de yield optimization vira o "plugin exemplo" do framework
+
+### Objetivo
+Qualificar o projeto para foundation grants (Base, Aave, Compound, Optimism) como infra publica open-source, e ao mesmo tempo criar uma ferramenta reutilizavel pela comunidade DeFi.
+
+Para a estrategia completa de grants e detalhes arquiteturais do framework, ver: **[grant-strategy.md](./grant-strategy.md)**
