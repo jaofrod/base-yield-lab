@@ -61,7 +61,10 @@ logger = logging.getLogger(__name__)
 # CONEXAO E CONTRATOS
 # ============================================================
 
-w3 = Web3(Web3.HTTPProvider(BASE_RPC_URL))
+w3 = Web3(Web3.HTTPProvider(
+    BASE_RPC_URL,
+    request_kwargs={"headers": {"Connection": "close"}},
+))
 
 # Instanciar objetos de contrato
 # CONCEITO: Contract object
