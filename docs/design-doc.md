@@ -7,14 +7,14 @@ Base Yield Lab is a Python backend bot for studying DeFi automation on Base.
 The system has three main parts:
 
 - `listener`: reads on-chain data through an RPC provider
-- `engine`: evaluates the current state and chooses an action
+- `strategy`: deterministically evaluates the current state and chooses an action
 - `executor`: builds, signs, and optionally broadcasts transactions
 
 The core loop is simple:
 
 1. Read protocol and wallet state from Base.
 2. Build a structured state object.
-3. Ask the decision engine for an action.
+3. Choose an action with deterministic strategy code.
 4. Validate the proposed action with deterministic rules.
 5. If validation passes, execute the move.
 
@@ -24,7 +24,7 @@ The core loop is simple:
 - `web3.py` for EVM reads and writes
 - Alchemy or another Base RPC provider
 - Streamlit for the local dashboard
-- Anthropic tool calling for structured decisions
+- Optional Anthropic run analysis when `--ai-analysis` is enabled
 
 ## Risk Controls
 
@@ -33,6 +33,7 @@ The design assumes that financial automation needs hard guardrails.
 Main controls:
 
 - private key stays outside source control and outside the prompt layer
+- AI is not in the fund-movement decision path
 - deterministic validation happens before every transaction
 - paper trading mode tests the full transaction-building flow without broadcasting
 - gas cost and cooldown thresholds reduce noisy or wasteful moves
@@ -62,4 +63,3 @@ The project evolved in phases:
 ## Open Source Position
 
 This repository is open source because it is primarily a study project. The goal is to make the architecture, transaction flow, and safety model legible to anyone who wants to learn from it or reuse parts of it.
-

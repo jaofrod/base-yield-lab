@@ -3,7 +3,7 @@ main.py — Main bot loop.
 
 Cycle flow:
 1. Listener reads on-chain data -> BotState
-2. Engine requests a decision -> LLMAction
+2. Strategy chooses a deterministic BotAction
 3. If hold/alert: log and stop the cycle
 4. If move_funds: firewall validates -> FirewallResult
 5. If validation passes: executor runs the move
@@ -58,10 +58,22 @@ def setup_logging(log_file: str = "bot.log"):
         root.warning("File logging disabled: %s", e)
 
 
-def run_cycle() -> None:
+def _run_ai_analysis(state, action, firewall_result=None, execution_result=None) -> None:
+    """Run optional cold-path AI analysis without affecting execution outcome."""
+    try:
+        from analyst import analyze_run
+
+        summary = analyze_run(state, action, firewall_result, execution_result)
+        if summary:
+            logger.info("AI ANALYSIS:\n%s", summary)
+    except Exception as e:
+        logger.warning("AI analysis failed; bot result unchanged: %s", e, exc_info=True)
+
+
+def run_cycle(ai_analysis: bool = False) -> None:
     """Run a full bot cycle. Useful on its own during testing."""
     from listener import build_state
-    from engine import get_decision
+    from strategy import choose_action
     from firewall import validate_action
     from executor import execute_action
 
@@ -86,14 +98,20 @@ def run_cycle() -> None:
         state.network.gas_cost_estimate_usd,
     )
 
-    action = get_decision(state)
+    action = choose_action(state)
+    firewall_result = None
+    execution_result = None
 
     if action.action == "hold":
         logger.info("DECISION: HOLD - %s", action.reason)
+        if ai_analysis:
+            _run_ai_analysis(state, action)
         return
 
     if action.action == "alert":
         logger.warning("ALERT [%s]: %s", action.severity, action.message)
+        if ai_analysis:
+            _run_ai_analysis(state, action)
         return
 
     logger.info(
@@ -116,19 +134,24 @@ def run_cycle() -> None:
     firewall_result = validate_action(action, state)
     if not firewall_result.passed:
         logger.warning("FIREWALL BLOCKED: %s", firewall_result.failed_reasons)
+        if ai_analysis:
+            _run_ai_analysis(state, action, firewall_result)
         return
 
-    result = execute_action(action)
+    execution_result = execute_action(action)
 
-    if result["status"] in ("success", "paper"):
-        logger.info("EXECUTION: %s", result["status"].upper())
+    if execution_result["status"] in ("success", "paper"):
+        logger.info("EXECUTION: %s", execution_result["status"].upper())
         gas_cost = state.network.gas_cost_estimate_usd
         history = load_history()
         record_move(history, f"{action.from_protocol}->{action.to_protocol}", gas_cost)
     else:
-        logger.error("EXECUTION FAILED: %s", result)
+        logger.error("EXECUTION FAILED: %s", execution_result)
         history = load_history()
         record_error(history)
+
+    if ai_analysis:
+        _run_ai_analysis(state, action, firewall_result, execution_result)
 
     logger.info("END OF CYCLE")
 
@@ -147,6 +170,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=os.getenv("BOT_LOG_FILE", "bot.log"),
         help="Path to the log file. Defaults to BOT_LOG_FILE or bot.log.",
     )
+    parser.add_argument(
+        "--ai-analysis",
+        action="store_true",
+        help="Run optional cold-path AI analysis after deterministic decisions.",
+    )
     return parser.parse_args(argv)
 
 
@@ -155,7 +183,7 @@ def main(argv: list[str] | None = None):
     args = parse_args(argv)
     setup_logging(args.log_file)
 
-    missing_config = validate_runtime_config()
+    missing_config = validate_runtime_config(require_ai=args.ai_analysis)
     if missing_config:
         logger.error(
             "Missing required environment variables: %s",
@@ -168,6 +196,7 @@ def main(argv: list[str] | None = None):
 
     mode = "PAPER TRADING" if PAPER_TRADING else "LIVE TRADING"
     logger.info("Bot starting in mode: %s", mode)
+    logger.info("AI analysis: %s", "enabled" if args.ai_analysis else "disabled")
     logger.info("Wallet: %s", PUBLIC_ADDRESS)
     logger.info("RPC: %s...", BASE_RPC_URL[:50])
     logger.info("Polling interval: %ss", POLL_INTERVAL_SECONDS)
@@ -182,12 +211,12 @@ def main(argv: list[str] | None = None):
     clear_errors(history)
 
     if args.once:
-        run_cycle()
+        run_cycle(ai_analysis=args.ai_analysis)
         return
 
     while True:
         try:
-            run_cycle()
+            run_cycle(ai_analysis=args.ai_analysis)
         except KeyboardInterrupt:
             logger.info("Bot stopped by user (Ctrl+C)")
             break

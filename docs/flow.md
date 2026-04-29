@@ -68,15 +68,14 @@ It then computes:
 - estimated annual upside from moving
 - estimated gas cost for a full move
 
-### Engine
+### Strategy
 
-The engine receives the full state and returns one of three actions:
+The deterministic strategy receives the full state and returns one of two normal actions:
 
 - `hold`
 - `move_funds`
-- `alert`
 
-The prompt includes the real operating thresholds so the decision layer cannot invent looser limits.
+It compares Aave and Compound APYs, checks the minimum APY thresholds, and proposes a move only when the configured rules say it is worth considering. It performs no AI or network calls.
 
 ### Firewall
 
@@ -104,6 +103,10 @@ For a normal protocol-to-protocol move, the executor performs:
 
 If `PAPER_TRADING=true`, the executor still builds and signs the transactions but does not send them.
 
+### Optional AI Analysis
+
+When `--ai-analysis` is enabled, the completed run is sent to an AI analyst for a short human-readable summary. This is a cold path: it cannot choose actions, change amounts, approve blocked transactions, or bypass the firewall.
+
 ## Monitoring
 
 The bot writes:
@@ -119,4 +122,3 @@ The Streamlit dashboard reads those files directly and reconstructs APY history 
 - paper trading should be the default
 - the wallet should be dedicated to the bot
 - every contract address should be reviewed before live mode
-

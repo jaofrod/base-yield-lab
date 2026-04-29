@@ -26,7 +26,7 @@ from config import (
     USDC_DECIMALS,
     DEFAULT_GAS_LIMIT,
 )
-from state import LLMAction
+from state import BotAction
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +149,7 @@ def _supply_to_compound(amount_raw: int) -> dict:
     return _build_and_send_tx(call, f"supply {amount_raw} USDC to Compound")
 
 
-def execute_action(action: LLMAction) -> dict:
+def execute_action(action: BotAction) -> dict:
     """Execute a fund movement action."""
     if action.action != "move_funds":
         return {"status": "skipped", "reason": f"action is {action.action}, not move_funds"}

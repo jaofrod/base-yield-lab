@@ -78,8 +78,8 @@ class BotState:
 
 
 @dataclass
-class LLMAction:
-    """Decision returned by the LLM."""
+class BotAction:
+    """Action proposed by deterministic strategy code."""
 
     action: str = "hold"
     from_protocol: str = ""

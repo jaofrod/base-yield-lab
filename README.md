@@ -4,6 +4,8 @@ Open-source study project for learning DeFi automation on the Base network.
 
 Base Yield Lab reads live on-chain data, compares USDC supply opportunities between Aave V3 and Compound III, applies deterministic safety checks, and can prepare or execute transactions depending on the configured mode.
 
+Core decisions are deterministic. AI analysis is optional and runs only as a cold path when explicitly enabled with `--ai-analysis`.
+
 It was built as a learning project. Anyone can fork it, run it, inspect it, and adapt it.
 
 ## What It Does
@@ -13,7 +15,9 @@ It was built as a learning project. Anyone can fork it, run it, inspect it, and 
 - Reads current supply rates from Aave V3 and Compound III.
 - Estimates gas cost for a potential move.
 - Tracks recent activity in a local JSON file.
+- Chooses `hold` or `move_funds` with deterministic strategy code.
 - Applies a deterministic safety layer before any transaction.
+- Optionally asks AI to summarize a completed run after decisions and firewall checks.
 - Supports paper trading mode for testing without broadcasting transactions.
 - Includes a Streamlit dashboard for logs and basic runtime visibility.
 
@@ -33,9 +37,11 @@ Use a dedicated wallet and start with paper trading.
 flowchart LR
   RPC["Base RPC"]
   Listener["src/base_yield_lab/listener.py"]
-  Engine["src/base_yield_lab/engine.py"]
+  Strategy["src/base_yield_lab/strategy.py"]
   Firewall["src/base_yield_lab/firewall.py"]
   Executor["src/base_yield_lab/executor.py"]
+  Analyst["src/base_yield_lab/analyst.py"]
+  Notes["Optional AI run notes"]
   State[("bot_history.json")]
   Logs[("bot.log")]
   Dashboard["src/base_yield_lab/dashboard.py"]
@@ -43,16 +49,22 @@ flowchart LR
 
   RPC --> Listener
   Protocols --> Listener
-  Listener --> Engine
-  Engine --> Firewall
+  Listener --> Strategy
+  Strategy --> Firewall
   Firewall --> Executor
   Executor --> Protocols
+  Strategy --> Logs
+  Firewall --> Logs
   Firewall --> State
   Executor --> Logs
   Listener --> Logs
+  Logs -. "--ai-analysis" .-> Analyst
+  Analyst -.-> Notes
   Logs --> Dashboard
   State --> Dashboard
 ```
+
+AI never sits between the deterministic strategy, firewall, and executor. It cannot choose actions, change amounts, approve blocked transactions, or bypass firewall checks.
 
 ## Project Structure
 
@@ -60,9 +72,10 @@ flowchart LR
 | --- | --- |
 | `src/base_yield_lab/main.py` | Main loop. Orchestrates reading state, choosing an action, validating it, and executing it. |
 | `src/base_yield_lab/listener.py` | Reads Base, Aave V3, Compound III, wallet balances, gas price, and derived state. |
-| `src/base_yield_lab/engine.py` | Decision layer that receives the current state and returns an action. |
+| `src/base_yield_lab/strategy.py` | Deterministic decision layer that receives the current state and returns an action. |
 | `src/base_yield_lab/firewall.py` | Deterministic guardrail layer that validates every move before execution. |
 | `src/base_yield_lab/executor.py` | Builds, signs, and optionally broadcasts transactions. |
+| `src/base_yield_lab/analyst.py` | Optional cold-path AI analysis for completed runs. |
 | `src/base_yield_lab/state.py` | Dataclasses and local persistence for recent activity. |
 | `src/base_yield_lab/config.py` | Environment variables, protocol addresses, ABIs, and thresholds. |
 | `src/base_yield_lab/dashboard.py` | Streamlit dashboard for logs, APY history, and runtime state. |
@@ -71,6 +84,8 @@ flowchart LR
 ## Safety Model
 
 The project uses a simple but important rule: no transaction should be sent before passing deterministic checks.
+
+Fund movement decisions are made by `strategy.py`, then checked by `firewall.py`. Optional AI analysis receives a completed run summary after that path and is not allowed to affect execution.
 
 The firewall validates:
 
@@ -91,7 +106,7 @@ Paper trading should remain enabled until the operator understands every transac
 - Python 3.12+
 - Base RPC URL
 - Dedicated EVM wallet
-- Anthropic API key for the decision engine
+- Anthropic API key only when using `--ai-analysis`
 - USDC and ETH on Base if running live transactions
 
 ## Setup
@@ -109,14 +124,14 @@ Edit `.env` before running.
 PRIVATE_KEY=
 PUBLIC_ADDRESS=
 BASE_RPC_URL=
-ANTHROPIC_API_KEY=
+ANTHROPIC_API_KEY= # optional, only used by --ai-analysis
 PAPER_TRADING=true
 BOT_LOG_FILE=bot.log
 ```
 
 Keep `PAPER_TRADING=true` while studying or testing. Setting it to `false` allows the executor to broadcast real transactions.
 
-Even in paper trading, the bot still needs a valid wallet, RPC URL, and API key because it reads live Base data and builds transactions locally before deciding whether to broadcast them.
+Even in paper trading, the bot still needs a valid wallet and RPC URL because it reads live Base data and builds transactions locally before deciding whether to broadcast them. It does not need an AI API key unless `--ai-analysis` is enabled.
 
 ## Run The Bot
 
@@ -134,6 +149,12 @@ Run a single cycle and exit:
 
 ```bash
 python src/base_yield_lab/main.py --once
+```
+
+Run a single cycle with optional AI analysis after the deterministic run:
+
+```bash
+python src/base_yield_lab/main.py --once --ai-analysis
 ```
 
 The bot writes runtime logs to:

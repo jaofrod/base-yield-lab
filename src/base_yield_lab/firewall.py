@@ -19,7 +19,7 @@ from config import (
     AAVE_POOL_ADDRESS,
     COMPOUND_COMET_ADDRESS,
 )
-from state import BotState, LLMAction, FirewallResult
+from state import BotState, BotAction, FirewallResult
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def _get_target_contract(protocol: str) -> str:
     return mapping.get(protocol, "")
 
 
-def _get_source_balance(action: LLMAction, state: BotState) -> float:
+def _get_source_balance(action: BotAction, state: BotState) -> float:
     """Return the available balance for the source location."""
     if action.from_protocol == "aave_v3":
         return state.aave.deposited_usdc
@@ -44,7 +44,7 @@ def _get_source_balance(action: LLMAction, state: BotState) -> float:
     return 0.0
 
 
-def _estimate_annual_gain(action: LLMAction, state: BotState) -> float:
+def _estimate_annual_gain(action: BotAction, state: BotState) -> float:
     """Estimate annual USD gain from the proposed move."""
     if action.to_protocol == "aave_v3":
         to_apy = state.aave.current_apy_pct
@@ -68,8 +68,8 @@ def _estimate_annual_gain(action: LLMAction, state: BotState) -> float:
     return (apy_diff / 100) * amount
 
 
-def validate_action(action: LLMAction, state: BotState) -> FirewallResult:
-    """Validate an LLM action against deterministic rules."""
+def validate_action(action: BotAction, state: BotState) -> FirewallResult:
+    """Validate a bot action against deterministic rules."""
     if action.action in ("hold", "alert"):
         return FirewallResult(
             passed=True,
