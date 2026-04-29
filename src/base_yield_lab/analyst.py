@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 MODEL = "claude-sonnet-4-20250514"
 
-SYSTEM_PROMPT = """You summarize Base Yield Lab bot runs for a human operator.
+SYSTEM_PROMPT = """You summarize BaseRoute bot runs for a human operator.
 
 Core constraints:
 - Deterministic strategy code already chose the action.

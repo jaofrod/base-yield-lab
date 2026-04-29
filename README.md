@@ -1,8 +1,10 @@
-# Base Yield Lab
+# BaseRoute
+
+BaseRoute - Base Yield Bot.
 
 Open-source study project for learning DeFi automation on the Base network.
 
-Base Yield Lab reads live on-chain data, compares USDC supply opportunities between Aave V3 and Compound III, applies deterministic safety checks, and can prepare or execute transactions depending on the configured mode.
+BaseRoute reads live on-chain data, compares USDC supply opportunities between Aave V3 and Compound III, applies deterministic safety checks, and can prepare or execute transactions depending on the configured mode.
 
 Core decisions are deterministic. AI analysis is optional and runs only as a cold path when explicitly enabled with `--ai-analysis`.
 

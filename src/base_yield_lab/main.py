@@ -158,7 +158,7 @@ def run_cycle(ai_analysis: bool = False) -> None:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run Base Yield Lab, a DeFi automation study bot for Base."
+        description="Run BaseRoute, a deterministic Base yield bot."
     )
     parser.add_argument(
         "--once",

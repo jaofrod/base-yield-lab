@@ -1,5 +1,5 @@
 """
-dashboard.py — Streamlit dashboard for Base Yield Lab.
+dashboard.py — Streamlit dashboard for BaseRoute.
 
 Run from the project root:
     streamlit run src/base_yield_lab/dashboard.py
@@ -15,7 +15,7 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="Base Yield Lab",
+    page_title="BaseRoute",
     page_icon="⚡",
     layout="wide",
 )
@@ -152,7 +152,7 @@ col_title, col_controls = st.columns([4, 1])
 
 with col_title:
     mode = state["mode"] or "Waiting for the first cycle..."
-    st.title(f"Base Yield Lab — {mode}")
+    st.title(f"BaseRoute — {mode}")
     if state["last_cycle"]:
         st.caption(f"Last recorded cycle: {state['last_cycle']}")
     else:
