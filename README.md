@@ -32,13 +32,13 @@ Use a dedicated wallet and start with paper trading.
 ```mermaid
 flowchart LR
   RPC["Base RPC"]
-  Listener["listener.py"]
-  Engine["engine.py"]
-  Firewall["firewall.py"]
-  Executor["executor.py"]
+  Listener["src/base_yield_lab/listener.py"]
+  Engine["src/base_yield_lab/engine.py"]
+  Firewall["src/base_yield_lab/firewall.py"]
+  Executor["src/base_yield_lab/executor.py"]
   State[("bot_history.json")]
   Logs[("bot.log")]
-  Dashboard["dashboard.py"]
+  Dashboard["src/base_yield_lab/dashboard.py"]
   Protocols["Aave V3 / Compound III"]
 
   RPC --> Listener
@@ -56,16 +56,17 @@ flowchart LR
 
 ## Project Structure
 
-| File | Purpose |
+| Path | Purpose |
 | --- | --- |
-| `main.py` | Main loop. Orchestrates reading state, choosing an action, validating it, and executing it. |
-| `listener.py` | Reads Base, Aave V3, Compound III, wallet balances, gas price, and derived state. |
-| `engine.py` | Decision layer that receives the current state and returns an action. |
-| `firewall.py` | Deterministic guardrail layer that validates every move before execution. |
-| `executor.py` | Builds, signs, and optionally broadcasts transactions. |
-| `state.py` | Dataclasses and local persistence for recent activity. |
-| `config.py` | Environment variables, protocol addresses, ABIs, and thresholds. |
-| `dashboard.py` | Streamlit dashboard for logs, APY history, and runtime state. |
+| `src/base_yield_lab/main.py` | Main loop. Orchestrates reading state, choosing an action, validating it, and executing it. |
+| `src/base_yield_lab/listener.py` | Reads Base, Aave V3, Compound III, wallet balances, gas price, and derived state. |
+| `src/base_yield_lab/engine.py` | Decision layer that receives the current state and returns an action. |
+| `src/base_yield_lab/firewall.py` | Deterministic guardrail layer that validates every move before execution. |
+| `src/base_yield_lab/executor.py` | Builds, signs, and optionally broadcasts transactions. |
+| `src/base_yield_lab/state.py` | Dataclasses and local persistence for recent activity. |
+| `src/base_yield_lab/config.py` | Environment variables, protocol addresses, ABIs, and thresholds. |
+| `src/base_yield_lab/dashboard.py` | Streamlit dashboard for logs, APY history, and runtime state. |
+| `docs/` | Study notes, original design notes, and planning material. |
 
 ## Safety Model
 
@@ -116,7 +117,7 @@ Keep `PAPER_TRADING=true` while studying or testing. Setting it to `false` allow
 ## Run The Bot
 
 ```bash
-python main.py
+python src/base_yield_lab/main.py
 ```
 
 The bot writes runtime logs to:
@@ -129,14 +130,14 @@ Both files are ignored by git.
 ## Run The Dashboard
 
 ```bash
-streamlit run dashboard.py
+streamlit run src/base_yield_lab/dashboard.py
 ```
 
 The dashboard reads local logs and history files. It does not need a separate database.
 
 ## Configuration
 
-Most tunable values live in `config.py`:
+Most tunable values live in `src/base_yield_lab/config.py`:
 
 - `MIN_APY_DIFF`
 - `MIN_APY_ABSOLUTE`
@@ -156,7 +157,7 @@ Good next steps:
 
 - add tests for the firewall;
 - add testnet support;
-- move protocol configs out of `config.py`;
+- move protocol configs out of `src/base_yield_lab/config.py`;
 - add a strategy interface;
 - improve dashboard state parsing;
 - add CI for linting and tests.

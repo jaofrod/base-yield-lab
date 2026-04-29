@@ -1,8 +1,8 @@
 """
 dashboard.py — Interface visual do bot em Streamlit.
 
-Para rodar:
-    streamlit run dashboard.py
+Para rodar a partir da raiz do projeto:
+    streamlit run src/base_yield_lab/dashboard.py
 
 CONCEITO: Como o Streamlit funciona
 ─────────────────────────────────────
@@ -44,13 +44,12 @@ st.set_page_config(
 # ─────────────────────────────────────────────────────────────
 # CAMINHOS DOS ARQUIVOS
 #
-# CONCEITO: Path(__file__).parent
-# __file__ é o caminho absoluto do script atual (dashboard.py).
-# .parent sobe um nível para a pasta que contém o script.
-# Assim, os arquivos são sempre encontrados relativo ao projeto,
-# independente de onde você rode o comando "streamlit run".
+# CONCEITO: resolver caminhos a partir da raiz
+# O dashboard fica em src/base_yield_lab/, mas bot.log e
+# bot_history.json ficam na raiz do projeto. parents[2] sobe de
+# dashboard.py -> base_yield_lab -> src -> raiz.
 # ─────────────────────────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 BOT_LOG = PROJECT_ROOT / "bot.log"
 HISTORY_FILE = PROJECT_ROOT / "bot_history.json"
 
@@ -262,7 +261,7 @@ with col_title:
     if state["last_cycle"]:
         st.caption(f"Ultimo ciclo registrado: {state['last_cycle']}")
     else:
-        st.caption("Nenhum dado ainda. Rode `python main.py` para iniciar o bot.")
+        st.caption("Nenhum dado ainda. Rode `python src/base_yield_lab/main.py` para iniciar o bot.")
 
 with col_controls:
     # CONCEITO: st.toggle()
