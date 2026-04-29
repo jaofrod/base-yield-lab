@@ -204,6 +204,8 @@ Good next steps:
 
 Contributions are welcome, especially if they make the bot easier to inspect, test, run safely, or understand.
 
+BaseRoute accepts contributions through GitHub Issues and Pull Requests. Direct commits to the default branch are not part of the contribution flow.
+
 Good contribution areas:
 
 - focused tests for strategy, firewall, listener parsing, and config validation;
