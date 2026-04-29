@@ -200,6 +200,22 @@ Good next steps:
 - improve dashboard state parsing;
 - add CI for linting and tests.
 
+## Contributing
+
+Contributions are welcome, especially if they make the bot easier to inspect, test, run safely, or understand.
+
+Good contribution areas:
+
+- focused tests for strategy, firewall, listener parsing, and config validation;
+- clearer setup docs and safer defaults;
+- dashboard improvements that explain runtime state without hiding risk;
+- support for additional read-only protocol data;
+- small refactors that make deterministic behavior easier to audit.
+
+Please keep pull requests small and explain the safety impact of the change. Changes that affect fund movement should include tests and should preserve the core rule: strategy decisions are deterministic, and every move must pass the firewall before execution.
+
+Avoid contributions that frame BaseRoute as an AI trading bot, promise returns, bypass guardrails, or encourage use with meaningful funds before review.
+
 ## Security Notes
 
 - Never commit `.env`.
