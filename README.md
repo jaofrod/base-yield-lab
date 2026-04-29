@@ -79,7 +79,6 @@ AI never sits between the deterministic strategy, firewall, and executor. It can
 | `src/base_yield_lab/state.py` | Dataclasses and local persistence for recent activity. |
 | `src/base_yield_lab/config.py` | Environment variables, protocol addresses, ABIs, and thresholds. |
 | `src/base_yield_lab/dashboard.py` | Streamlit dashboard for logs, APY history, and runtime state. |
-| `docs/` | Study notes, original design notes, and planning material. |
 
 ## Safety Model
 
